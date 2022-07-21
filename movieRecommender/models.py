@@ -1,11 +1,11 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from movieRecommender import db, login_manager
+from flask_login import UserMixin
 
-app = Flask(__name__)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-
-db = SQLAlchemy(app)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 class Movie(db.Model):
 	movieId = db.Column(db.Integer, primary_key = True)
@@ -28,7 +28,7 @@ class Genre(db.Model):
 
 class MovieHasGenre(db.Model):
 	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable = False)
-	genreId = db.Column(db.Integer, db.ForeignKey('genre.genreId'), nullable = False)
+	genreId = db.Column(db.Integer, db.ForeignKey('genre.genreId'), nullable = False,primary_key=True)
 
 	def __repr__(self):
 		return f"MovieHasGenre('{self.movieId}', '{self.genreId}')"
@@ -42,7 +42,7 @@ class Keyword(db.Model):
 
 class MovieHasKeyword(db.Model):
 	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable = False)
-	keywordId = db.Column(db.Integer, db.ForeignKey('keyword.keywordId'), nullable = False)
+	keywordId = db.Column(db.Integer, db.ForeignKey('keyword.keywordId'), nullable = False,primary_key=True)
 
 	def __repr__(self):
 		return f"MovieHasKeyword('{self.movieId}', '{self.keywordId}')"
@@ -57,25 +57,26 @@ class Cast(db.Model):
 
 class MovieHasCast(db.Model):
 	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable = False)
-	castId = db.Column(db.Integer, db.ForeignKey('cast.castId'), nullable = False)
+	castId = db.Column(db.Integer, db.ForeignKey('cast.castId'), nullable = False,primary_key=True)
 
 	def __repr__(self):
 		return f"MovieHasCast('{self.mcid}', '{self.cast_id}')"
 
 
-class User(db.Model):
-	userId = db.Column(db.Integer, primary_key = True)
+class User(db.Model, UserMixin):
+	id = db.Column(db.Integer, primary_key = True)
 	username = db.Column(db.String(50), unique = True, nullable = False)
+	email = db.Column(db.String(120), unique=True, nullable=False)
+	image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
 	password = db.Column(db.String(60), nullable = False)
-	salt = db.Column(db.String(60), nullable=False)
 
 	def __repr__(self):
-		return f"User('{self.userId}', '{self.username}')"
+		return f"User('{self.id}', '{self.username}')"
 
 
 class Watched(db.Model):
 	watchedId = db.Column(db.Integer, primary_key = True)
-	userId = db.Column(db.Integer, db.ForeignKey('user.userId'), nullable = False)
+	userId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
 	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable = False)
 
 	def __repr__(self):

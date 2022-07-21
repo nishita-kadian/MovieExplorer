@@ -2,22 +2,19 @@ import os
 import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request,abort
-from user_auth import app, db, bcrypt
-from user_auth.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
-from user_auth.models import User, Post
+from movieRecommender import app, db, bcrypt
+from movieRecommender.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from movieRecommender.models import User, Movie, Genre, Keyword, MovieHasGenre, MovieHasKeyword, Cast, MovieHasCast, Watched
 from flask_login import login_user, current_user, logout_user, login_required
 
 @app.route("/")
 @app.route("/home")
 def home():
-	posts = Post.query.all()
-	return render_template('home.html', posts = posts)
-
+	return render_template('home.html')
 
 @app.route("/about")
 def about():
     return render_template('about.html', title='About')
-
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -79,13 +76,11 @@ def account():
 			picture_file = save_picture(form.picture.data)
 			current_user.image_file = picture_file	
 		current_user.username = form.username.data
-		current_user.email = form.email.data
 		db.session.commit()
 		flash('your account has been updated!', 'success')
 		return redirect(url_for('account')) 
 	elif request.method == 'GET':
 		form.username.data = current_user.username
-		form.username.email = current_user.email
 	image_file = url_for('static', filename = 'profile_pics/'+ current_user.image_file)
 	return render_template('account.html', title='Account', image_file=image_file, form =form)
 
