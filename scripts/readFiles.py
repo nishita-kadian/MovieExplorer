@@ -3,7 +3,7 @@ import json
 import os
 import ast
 
-FILENAMES = ['credits', 'keywords', 'links', 'movies_metadata', 'ratings']
+FILENAMES = ['credits', 'keywords', 'links', 'movies_metadata']
 FILENAME_IGNORING_FOR_NOW = ['ratings']
 
 def getColumnMapFromRow(row, columns):
