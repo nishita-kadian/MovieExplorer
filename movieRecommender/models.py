@@ -9,15 +9,21 @@ def load_user(user_id):
 
 class Movie(db.Model):
 	movieId = db.Column(db.Integer, primary_key = True)
-	rating =  db.Column(db.Integer,nullable = False)
+	rating = db.Column(db.Integer,nullable = False)
 	title = db.Column(db.String(500), nullable = False)
 	director = db.Column(db.String(50), nullable = False)
 	year = db.Column(db.Integer, nullable = False)
-	time =  db.Column(db.DateTime  , nullable = False)
-	imdbRating = db.Column(db.Integer, nullable = False)
+	revenue = db.Column(db.Integer, nullable=True)
+	imdbLink = db.Column(db.String(100), nullable=True)
+	runtime = db.Column(db.Float, nullable=True)
+	tagline = db.Column(db.String(500), nullable=True)
+	language = db.Column(db.String(20), nullable=True)
+	posterPath = db.Column(db.String(50), nullable=True)
+	overview = db.Column(db.String(1000), nullable=True)
+	voteCount = db.Column(db.Float, nullable=True)
 
 	def __repr__(self):
-		return f"Movie('{self.movieId}', '{self.rating}', '{self.title}', '{self.director}', '{self.year}' , '{self.time}' , '{self.imdbRating}')"
+		return f"Movie('{self.movieId}', '{self.rating}', '{self.title}', '{self.director}', '{self.year}', '{self.time}', '{self.imdbLink}', '{self.imdbRating}')"
 
 class Genre(db.Model):
 	genreId = db.Column(db.Integer, primary_key = True)
@@ -32,6 +38,16 @@ class MovieHasGenre(db.Model):
 
 	def __repr__(self):
 		return f"MovieHasGenre('{self.movieId}', '{self.genreId}')"
+
+class Rating(db.Model):
+	ratingId  = db.Column(db.Integer, primary_key=True)
+	rating = db.Column(db.Integer, nullable=False)
+	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable=False)
+	timestamp = db.Column(db.DateTime, nullable=False)
+	userRatingId = db.Column(db.Integer, nullable=False) # userId for user who gave rating on some other portal
+
+	def __repr__(self):
+		return f"Rating('{self.ratingId}', '{self.movieId}', '{self.timestamp}')"
 
 class Keyword(db.Model):
 	keywordId = db.Column(db.Integer, primary_key = True)
