@@ -1,7 +1,7 @@
 # Movie recommender system
 
 ## Sample
-![Imitation Game](https://raw.githubusercontent.com/nishita-kadian/Project/main/assets/imitationGame.png)
+![Imitation Game](https://raw.githubusercontent.com/nishita-kadian/Project/main/assets/sample.png)
 
 ## REST based APIs
 
