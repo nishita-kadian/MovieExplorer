@@ -1,5 +1,8 @@
 # Movie recommender system
 
+## Sample
+![Imitation Game](https://raw.githubusercontent.com/nishita-kadian/Project/main/assets/imitationGame.png)
+
 ## REST based APIs
 
 REST based APIs written for login, fetching next movie to watch, populating database with movies dataset and others.
