@@ -9,7 +9,7 @@ def load_user(user_id):
 
 class Movie(db.Model):
 	movieId = db.Column(db.Integer, primary_key = True)
-	rating = db.Column(db.Integer,nullable = False)
+	rating = db.Column(db.Float, nullable = False)
 	title = db.Column(db.String(500), nullable = False)
 	director = db.Column(db.String(50), nullable = False)
 	year = db.Column(db.Integer, nullable = False)
@@ -23,7 +23,7 @@ class Movie(db.Model):
 	voteCount = db.Column(db.Float, nullable=True)
 
 	def __repr__(self):
-		return f"Movie('{self.movieId}', '{self.rating}', '{self.title}', '{self.director}', '{self.year}', '{self.time}', '{self.imdbLink}', '{self.imdbRating}')"
+		return f"Movie('{self.movieId}', '{self.rating}', '{self.title}', '{self.director}', '{self.year}', '{self.runtime}', '{self.imdbLink}')"
 
 class Genre(db.Model):
 	genreId = db.Column(db.Integer, primary_key = True)
@@ -33,21 +33,12 @@ class Genre(db.Model):
 		return f"Genre('{self.genreId}', '{self.genreName}')"
 
 class MovieHasGenre(db.Model):
+	movieHasGenreId = db.Column(db.Integer, nullable = False, primary_key=True)
 	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable = False)
-	genreId = db.Column(db.Integer, db.ForeignKey('genre.genreId'), nullable = False,primary_key=True)
+	genreId = db.Column(db.Integer, db.ForeignKey('genre.genreId'), nullable = False, primary_key=True)
 
 	def __repr__(self):
 		return f"MovieHasGenre('{self.movieId}', '{self.genreId}')"
-
-class Rating(db.Model):
-	ratingId  = db.Column(db.Integer, primary_key=True)
-	rating = db.Column(db.Integer, nullable=False)
-	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable=False)
-	timestamp = db.Column(db.DateTime, nullable=False)
-	userRatingId = db.Column(db.Integer, nullable=False) # userId for user who gave rating on some other portal
-
-	def __repr__(self):
-		return f"Rating('{self.ratingId}', '{self.movieId}', '{self.timestamp}')"
 
 class Keyword(db.Model):
 	keywordId = db.Column(db.Integer, primary_key = True)
@@ -57,27 +48,12 @@ class Keyword(db.Model):
 		return f"Keyword('{self.keywordId}', '{self.keywordName}')"
 
 class MovieHasKeyword(db.Model):
+	movieHasKeywordId = db.Column(db.Integer, nullable=False, primary_key=True)
 	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable = False)
-	keywordId = db.Column(db.Integer, db.ForeignKey('keyword.keywordId'), nullable = False,primary_key=True)
+	keywordId = db.Column(db.Integer, db.ForeignKey('keyword.keywordId'), nullable = False, primary_key=True)
 
 	def __repr__(self):
 		return f"MovieHasKeyword('{self.movieId}', '{self.keywordId}')"
-
-
-class Cast(db.Model):
-	castId = db.Column(db.Integer, primary_key = True)
-	castName = db.Column(db.String(50),nullable = False)
-
-	def __repr__(self):
-		return f"Cast('{self.castId}', '{self.castName}')"
-
-class MovieHasCast(db.Model):
-	movieId = db.Column(db.Integer, db.ForeignKey('movie.movieId'), nullable = False)
-	castId = db.Column(db.Integer, db.ForeignKey('cast.castId'), nullable = False,primary_key=True)
-
-	def __repr__(self):
-		return f"MovieHasCast('{self.mcid}', '{self.cast_id}')"
-
 
 class User(db.Model, UserMixin):
 	id = db.Column(db.Integer, primary_key = True)

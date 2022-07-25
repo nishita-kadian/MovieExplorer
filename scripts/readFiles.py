@@ -3,7 +3,7 @@ import json
 import os
 import ast
 
-FILENAMES = ['credits', 'keywords', 'links', 'movies_metadata']
+FILENAMES = ['movies_metadata', 'credits', 'keywords', 'links']
 FILENAME_IGNORING_FOR_NOW = ['ratings']
 
 def getColumnMapFromRow(row, columns):
@@ -79,7 +79,9 @@ def getCSVToDBNameForMovies(CSVName):
         'language': 'language', \
         'poster_path': 'posterPath', \
         'overview': 'overview', \
-        'vote_count': 'voteCount'}
+        'vote_count': 'voteCount', \
+        'genres': 'genre', \
+        'original_language': 'language'}
     if CSVName not in nameMap.keys():
         return None
     return nameMap[CSVName]
@@ -94,6 +96,15 @@ def processMoviesMetaData(mappedRows):
             innerDictKey = getCSVToDBNameForMovies(key)
             if innerDictKey is None:
                 continue
+            genres = []
+            if key == 'genres':
+                try:
+                    genreData = ast.literal_eval(mappedRow[outerDictKey][key])
+                    for genre in genreData:
+                        genres.append(genre['name'])
+                    mappedRow[outerDictKey][key] = genres
+                except:
+                    print("PRINT PRINT: ", mappedRow[outerDictKey][key])
             innerDict[innerDictKey] = mappedRow[outerDictKey][key]
         outerDict[outerDictKey] = innerDict
         processedRows.append(outerDict)
@@ -168,7 +179,36 @@ def getProcessFunction(fileName):
     return processFactory[fileName]
 # ===================================================================
 
+def linkData(processedData):
+    newProcessedData = []
+    creditsData = {}
+    for entry in processedData['credits']:
+        key = list(entry.keys())[0]
+        creditsData[key] = entry[key]
+    keywordsData = {}
+    for entry in processedData['keywords']:
+        key = list(entry.keys())[0]
+        keywordsData[key] = entry[key]
+    linksData = {}
+    for entry in processedData['links']:
+        key = list(entry.keys())[0]
+        linksData[key] = entry[key]
+    for row in processedData['movies_metadata']:
+        movieId = list(row.keys())[0]
+        try:
+            row[movieId]['director'] = creditsData[movieId]['director']
+        except:
+            row[movieId]['director'] = ""
+        try:
+            row[movieId]['keywords'] = keywordsData[movieId]['keywords']
+        except:
+            row[movieId]['keywords'] = []
+        row[movieId]['imdbLink'] = linksData[movieId]['imdbLink']
+        newProcessedData.append({movieId: row[movieId]})
+    return newProcessedData
+
 if __name__ == "__main__":
+    processedData = {}
     for file in FILENAMES:
         with open(os.path.join(os.getcwd(), file + ".csv"), 'r', encoding="utf-8") as f:
             csv_reader = csv.reader(f, delimiter=",")
@@ -177,7 +217,6 @@ if __name__ == "__main__":
             processorFunction = getProcessFunction(file)
             isColumnNamesRow = True
             mappedRows = []
-            processedData = {}
             for row in csv_reader:
                 if isColumnNamesRow:
                     isColumnNamesRow = False
@@ -192,4 +231,6 @@ if __name__ == "__main__":
                 mappedRows.append(mappedRow)
             processedRows = processorFunction(mappedRows)
             processedData[file] = processedRows
-            print(processedRows[0])
+    linkedData = linkData(processedData)
+    with open('linkedData', 'w', encoding='utf-8') as fout:
+        json.dump(linkedData, fout)

@@ -4,8 +4,51 @@ from PIL import Image
 from flask import render_template, url_for, flash, redirect, request,abort
 from movieRecommender import app, db, bcrypt
 from movieRecommender.forms import RegistrationForm, LoginForm, UpdateAccountForm
-from movieRecommender.models import User, Movie, Genre, Keyword, MovieHasGenre, MovieHasKeyword, Cast, MovieHasCast, Watched
+from movieRecommender.models import User, Movie, Genre, Keyword, MovieHasGenre, MovieHasKeyword, Watched
 from flask_login import login_user, current_user, logout_user, login_required
+from sqlalchemy import func
+
+
+
+@app.route("/backRoute/addMovie", methods=['POST'])
+def addMovie():
+    movieId = request.form['movieId']
+    genres = request.form['genre']
+    overview = request.form['overview']
+    posterPath = request.form['posterPath']
+    year = request.form['year'].split("-")[0]
+    revenue = request.form['revenue']
+    runtime = request.form['runtime']
+    tagline = request.form['tagline']
+    title = request.form['title']
+    rating = request.form['rating']
+    voteCount = request.form['voteCount']
+    director = request.form['director']
+    keywords = request.form['keywords']
+    imdbLink = request.form['imdbLink']
+    language = request.form['language']
+    movieObject = Movie(movieId = movieId, \
+                        title = title, \
+                        rating = rating, \
+                        director = director, \
+                        year = year, \
+                        revenue = revenue, \
+                        imdbLink = imdbLink, \
+                        runtime = runtime, \
+                        tagline = tagline, \
+                        language = language, \
+                        posterPath = posterPath, \
+                        overview = overview, \
+                        voteCount = voteCount)
+    ifRowAlready = db.session.query(Movie).filter(Movie.movieId == 862).count()
+    if ifRowAlready == 0:
+        db.session.add(movieObject)
+        db.session.commit()
+    return render_template('home.html')
+
+@app.route("/backRoute/populateGenres", methods=['POST'])
+def populateGenres():
+    return render_template('home.html')
 
 @app.route("/")
 @app.route("/home")
