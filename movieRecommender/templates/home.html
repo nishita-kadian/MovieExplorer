@@ -1,5 +1,10 @@
 {% extends "layout.html" %}
 {% block content %}	
-	<h1>Home Page</h1>
+	<h1>Explore Movie</h1>
+	<h3> Name: <a href={{movie.imdbLink}}>{{movie.title}}</a> </h3>
+	<pre> Director: {{movie.director}}
+ Year: {{movie.year}}
+ IMDB Rating: {{movie.rating}} </pre>
+ 	<img src={{image}} width=500 height=500/>
 {% endblock content %}
 

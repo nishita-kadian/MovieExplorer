@@ -7,53 +7,28 @@ from movieRecommender.forms import RegistrationForm, LoginForm, UpdateAccountFor
 from movieRecommender.models import User, Movie, Genre, Keyword, MovieHasGenre, MovieHasKeyword, Watched
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import func
-
-
-
-@app.route("/backRoute/addMovie", methods=['POST'])
-def addMovie():
-    movieId = request.form['movieId']
-    genres = request.form['genre']
-    overview = request.form['overview']
-    posterPath = request.form['posterPath']
-    year = request.form['year'].split("-")[0]
-    revenue = request.form['revenue']
-    runtime = request.form['runtime']
-    tagline = request.form['tagline']
-    title = request.form['title']
-    rating = request.form['rating']
-    voteCount = request.form['voteCount']
-    director = request.form['director']
-    keywords = request.form['keywords']
-    imdbLink = request.form['imdbLink']
-    language = request.form['language']
-    movieObject = Movie(movieId = movieId, \
-                        title = title, \
-                        rating = rating, \
-                        director = director, \
-                        year = year, \
-                        revenue = revenue, \
-                        imdbLink = imdbLink, \
-                        runtime = runtime, \
-                        tagline = tagline, \
-                        language = language, \
-                        posterPath = posterPath, \
-                        overview = overview, \
-                        voteCount = voteCount)
-    ifRowAlready = db.session.query(Movie).filter(Movie.movieId == 862).count()
-    if ifRowAlready == 0:
-        db.session.add(movieObject)
-        db.session.commit()
-    return render_template('home.html')
-
-@app.route("/backRoute/populateGenres", methods=['POST'])
-def populateGenres():
-    return render_template('home.html')
+import random
+import requests
+from bs4 import BeautifulSoup
 
 @app.route("/")
 @app.route("/home")
 def home():
-	return render_template('home.html')
+    genreId = random.randint(0, 19)
+    moviesSize = db.session.query(MovieHasGenre).filter(MovieHasGenre.genreId == genreId).count()
+    rowNumber = random.randint(0, moviesSize-1)
+    movieId = db.session.query(MovieHasGenre).filter(MovieHasGenre.genreId == genreId)[rowNumber].movieId
+    movie = db.session.query(Movie).filter(Movie.movieId == movieId).first()
+    page = requests.get(movie.imdbLink)
+    soup = BeautifulSoup(page.content, "html.parser")
+    ratingResults = soup.find("span", class_="sc-7ab21ed2-1 jGRxWM")
+    imageResults = soup.find("a", class_="ipc-lockup-overlay ipc-focusable")["href"]
+    imageResults = "https://www.imdb.com" + imageResults
+    imagePage = requests.get(imageResults)
+    soup = BeautifulSoup(imagePage.content, "html.parser")
+    imageResults = soup.find_all("img")[0]["src"]
+    movie.rating = ratingResults.text
+    return render_template('home.html', movie=movie, image=imageResults)
 
 @app.route("/about")
 def about():
@@ -97,33 +72,33 @@ def logout():
 
 
 def save_picture(form_picture):
-	random_hex = secrets.token_hex(8)
-	_, f_ext = os.path.splitext(form_picture.filename)
-	picture_fn = random_hex + f_ext
-	picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
-	
-	output_size = (125,125)
-	i = Image.open(form_picture)
-	i.thumbnail(output_size)
-	i.save(picture_path)
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    
+    output_size = (125,125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
 
-	return picture_fn
+    return picture_fn
 
 
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
 def account():
-	form = UpdateAccountForm()
-	if form.validate_on_submit():
-		if form.picture.data:
-			picture_file = save_picture(form.picture.data)
-			current_user.image_file = picture_file	
-		current_user.username = form.username.data
-		db.session.commit()
-		flash('your account has been updated!', 'success')
-		return redirect(url_for('account')) 
-	elif request.method == 'GET':
-		form.username.data = current_user.username
-	image_file = url_for('static', filename = 'profile_pics/'+ current_user.image_file)
-	return render_template('account.html', title='Account', image_file=image_file, form =form)
+    form = UpdateAccountForm()
+    if form.validate_on_submit():
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            current_user.image_file = picture_file  
+        current_user.username = form.username.data
+        db.session.commit()
+        flash('your account has been updated!', 'success')
+        return redirect(url_for('account')) 
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+    image_file = url_for('static', filename = 'profile_pics/'+ current_user.image_file)
+    return render_template('account.html', title='Account', image_file=image_file, form =form)
 
