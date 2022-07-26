@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+	<h1>Recommended Movies</h1>
+	<p> PLEASE NOTE: The rating provided here are not related to IMDB and taken from TMDB and might not always be desirable.</p>
+	<label for="genres">Choose a Genre:</label>
+		<select name="genres" id="genres">
+		{% for genre in genres %}
+			<option value={{genre.genreName}}>{{genre.genreName}}</option>
+		{% endfor %}
+		</select>
+	<script>
+		function func(){
+			var el = document.getElementById('genres');
+			var text = el.options[el.selectedIndex].innerHTML;
+			document.getElementById('output').value = text;
+		}
+	</script>
+	<form>
+    	<input type="submit" id="output" name="genre" value="Search" onclick="func()">
+	</form>
+	{% for movie in movies %}
+        <pre><a href={{movie.imdbLink}}>{{movie.title}}</a> with rating of {{movie.rating}}</pre>
+    {% endfor %}
+{% endblock content %}

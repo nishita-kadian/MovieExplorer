@@ -4,7 +4,12 @@
 	<h3> Name: <a href={{movie.imdbLink}}>{{movie.title}}</a> </h3>
 	<pre> Director: {{movie.director}}
  Year: {{movie.year}}
- IMDB Rating: {{movie.rating}} </pre>
+ IMDB Rating: {{movie.rating}} 
+ Genre: /<nobr>
+ {% for genre in genres %}
+  {{genre.genreName}}/ <nobr>
+ {% endfor %}
+</pre>
  	<img src={{image}} width=500 height=500/>
 {% endblock content %}
 

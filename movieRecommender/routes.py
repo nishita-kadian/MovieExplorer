@@ -18,6 +18,10 @@ def home():
     moviesSize = db.session.query(MovieHasGenre).filter(MovieHasGenre.genreId == genreId).count()
     rowNumber = random.randint(0, moviesSize-1)
     movieId = db.session.query(MovieHasGenre).filter(MovieHasGenre.genreId == genreId)[rowNumber].movieId
+    genresSuper = db.session.query(MovieHasGenre).filter(MovieHasGenre.movieHasGenreId ==  movieId).all()
+    genres = []
+    for genre in genresSuper:
+        genres.append(db.session.query(Genre).filter(Genre.genreId == genre.genreId).first())
     movie = db.session.query(Movie).filter(Movie.movieId == movieId).first()
     page = requests.get(movie.imdbLink)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -28,7 +32,8 @@ def home():
     soup = BeautifulSoup(imagePage.content, "html.parser")
     imageResults = soup.find_all("img")[0]["src"]
     movie.rating = ratingResults.text
-    return render_template('home.html', movie=movie, image=imageResults)
+    print(genres)
+    return render_template('home.html', movie=movie, image=imageResults, genres=genres)
 
 @app.route("/about")
 def about():
@@ -101,4 +106,28 @@ def account():
         form.username.data = current_user.username
     image_file = url_for('static', filename = 'profile_pics/'+ current_user.image_file)
     return render_template('account.html', title='Account', image_file=image_file, form =form)
+
+@app.route("/genreMovie", methods=['GET', 'POST'])
+def genreMovie():
+    genre = 'Animation'
+    if request.method == 'POST':
+        try:
+            genre = request.json['genre']
+        except:
+            pass
+    elif request.method == 'GET':
+        try:
+            genre = request.args['genre']
+        except:
+            pass
+    genres = db.session.query(Genre).all()
+    genreId = db.session.query(Genre).filter(Genre.genreName == genre).first().genreId
+    movieHasGenre = db.session.query(MovieHasGenre).filter(MovieHasGenre.genreId == genreId).all()
+    movies = []
+    for movieGenre in movieHasGenre:
+        movies.append(db.session.query(Movie).filter(Movie.movieId == movieGenre.movieId).first())
+    movies = sorted(movies, key=lambda movie: movie.rating)
+    movies.reverse()
+    return render_template('genreMovie.html', movies=movies, genres=genres)
+    
 
